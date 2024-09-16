@@ -1,7 +1,17 @@
-textureSize = 4096;
-gridWidth = textureSize;
-gridHeight = textureSize;
-winsize = null;
+const textureSize = 4096;
+const gridWidth = textureSize;
+const gridHeight = textureSize;
+let winsize = null;
+let cnv = null;
+let prv = null;
+
+function setup() {
+  winsize = min(windowWidth, windowHeight);
+  createCanvas(winsize, winsize);
+  cnv = createGraphics(4096, 4096);
+  prv = createGraphics(100, 100);
+  createSliders();
+}
 
 params = {
   hex_size: 100,
@@ -18,9 +28,6 @@ params = {
   rnd_clr: true,
 };
 
-let cnv = null;
-let prv = null;
-
 function drawHexagon(cX, cY, r) {
   cnv.beginShape();
   for (let a = 0; a < TAU; a += TAU / 6) {
@@ -31,12 +38,9 @@ function drawHexagon(cX, cY, r) {
 
 function getHexSize(x, y) {
   ns = params.noise_size * 0.0001;
-  noise_val = noise(x * ns, y * ns);
-  return remap(noise_val);
+  noiseVal = noise(x * ns, y * ns);
+  return remap(noiseVal);
 }
-
-min_noise = 4;
-max_noise = -4;
 
 function remap(x) {
   if (x < params.limit) {
@@ -57,30 +61,31 @@ function remap(x) {
   );
 }
 
-function get_rnd_clr(x, y) {
+function getRandomColor(x, y) {
   ns = params.color_size * 0.0001;
-  noise_val = noise(1 - x * ns, 1 - y * ns);
-  return noise_val;
+  noiseVal = noise(1 - x * ns, 1 - y * ns);
+  return noiseVal;
 }
 
 function makeGrid() {
+  cnv.noStroke();
+  cnv.background(0);
   cnv.fill(255);
   count = 0;
-  limit = params.limit;
   hexagonSize = params.hex_size;
 
   let nv;
-
+  let clrVal;
   for (y = 0; y < gridHeight; y += hexagonSize / 2.3) {
     for (x = 0; x < gridWidth; x += hexagonSize * 1.5) {
       nv = getHexSize(x, y);
-      let clr_val = 255;
+      clrVal = 255;
       if (params.v2c) {
-        clr_val = (nv / (hexagonSize * 0.5 - params.min_gap)) * 255;
-        cnv.fill(clr_val);
+        clrVal = (nv / (hexagonSize * 0.5 - params.min_gap)) * 255;
+        cnv.fill(clrVal);
       }
       if (params.rnd_clr) {
-        cnv.fill(clr_val * get_rnd_clr(x, y));
+        cnv.fill(clrVal * getRandomColor(x, y));
       }
       if (nv > 0) {
         drawHexagon(
@@ -94,7 +99,7 @@ function makeGrid() {
   }
 }
 
-function bake_slider(min_val, max_val, param, house, step = 0.01) {
+function bakeSlider(min_val, max_val, param, house, step = 0.01) {
   let h = createDiv();
   h.style("display", "flex");
 
@@ -106,13 +111,13 @@ function bake_slider(min_val, max_val, param, house, step = 0.01) {
   let label = createP(param);
   label.style("min-width", "5em");
 
-  function update_val() {
+  function updateVal() {
     print(`${param} updated!: ${s.value()}`);
     p.html(s.value());
     params[param] = s.value();
   }
 
-  s.input(update_val);
+  s.input(updateVal);
 
   h.child(label);
   h.child(s);
@@ -127,7 +132,7 @@ function bake_slider(min_val, max_val, param, house, step = 0.01) {
   return h;
 }
 
-function create_sliders() {
+function createSliders() {
   housing = createDiv();
   housing.position(0, 0);
   housing.style("display", "flex");
@@ -135,17 +140,14 @@ function create_sliders() {
   housing.style("background-color", "white");
   housing.style("padding", "1em");
 
-  let hexagonSize = params.hex_size;
-
-  h0 = bake_slider(40, 300, "hex_size", housing, 1);
-  h1 = bake_slider(-6, 6, "slope", housing);
-  h2 = bake_slider(-6, 6, "gain", housing);
-  h3 = bake_slider(0, 1, "limit", housing, 0.01);
-  h4 = bake_slider(0.01, 4, "curv", housing);
-  h5 = bake_slider(0, 50, "min_gap", housing, 1);
-  h6 = bake_slider(1, 80, "noise_size", housing, 1);
-  h7 = bake_slider(1, 80, "color_size", housing, 1);
-  // housing.child(h5)
+  h0 = bakeSlider(40, 300, "hex_size", housing, 1);
+  h1 = bakeSlider(-6, 6, "slope", housing);
+  h2 = bakeSlider(-6, 6, "gain", housing);
+  h3 = bakeSlider(0, 1, "limit", housing, 0.01);
+  h4 = bakeSlider(0.01, 4, "curv", housing);
+  h5 = bakeSlider(0, 50, "min_gap", housing, 1);
+  h6 = bakeSlider(1, 80, "noise_size", housing, 1);
+  h7 = bakeSlider(1, 80, "color_size", housing, 1);
 
   cb = createCheckbox("Invert", params.invert);
   cb.changed(invert_changed);
@@ -159,13 +161,13 @@ function create_sliders() {
   val2size.changed(v2s_changed);
   housing.child(val2size);
 
-  rnd_clr = createCheckbox("Random Color", params.rnd_clr);
-  rnd_clr.changed(rnd_clr_changed);
-  housing.child(rnd_clr);
+  rndClr = createCheckbox("Random Color", params.rnd_clr);
+  rndClr.changed(rnd_clr_changed);
+  housing.child(rndClr);
 
-  scr_btn = createButton("save");
-  scr_btn.mousePressed(scr_save);
-  housing.child(scr_btn);
+  resultSave = createButton("save");
+  resultSave.mousePressed(textureSave);
+  housing.child(resultSave);
 }
 
 function invert_changed() {
@@ -184,35 +186,25 @@ function rnd_clr_changed() {
   params.rnd_clr = this.checked();
 }
 
-function scr_save() {
+function textureSave() {
   saveCanvas(cnv);
 }
 
-function setup() {
-  winsize = min(windowWidth, windowHeight);
-  createCanvas(winsize, winsize);
-  cnv = createGraphics(4096, 4096);
-
-  prv = createGraphics(100, 100);
-
-  create_sliders();
-}
-
-function draw() {
-  cnv.background(0);
+function makePreview() {
   prv.background(0);
   prv.stroke("blue");
   prv.strokeWeight(3);
-
   for (let i = 0; i < 1; i += 0.01) {
     y = remap(i) / (params.hex_size * 0.5);
     prv.point(i * 100, 100 - (remap(i) / (params.hex_size * 0.5)) * 100);
   }
   prv.stroke("red");
   prv.line(params.limit * 100, 0, params.limit * 100, 100);
+}
 
-  cnv.noStroke();
-  makeGrid(cnv);
+function draw() {
+  makeGrid();
+  makePreview();
   image(cnv, 0, 0, winsize, winsize);
   image(prv, winsize - 110, 10);
 }

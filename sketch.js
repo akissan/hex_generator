@@ -37,8 +37,8 @@ function drawHexagon(cX, cY, r) {
 }
 
 function getHexSize(x, y) {
-  ns = params.noise_size * 0.0001;
-  noiseVal = noise(x * ns, y * ns);
+  const ns = params.noise_size * 0.0001;
+  const noiseVal = noise(x * ns, y * ns);
   return remap(noiseVal);
 }
 
@@ -62,8 +62,8 @@ function remap(x) {
 }
 
 function getRandomColor(x, y) {
-  ns = params.color_size * 0.0001;
-  noiseVal = noise(1 - x * ns, 1 - y * ns);
+  const ns = params.color_size * 0.0001;
+  const noiseVal = noise(1 - x * ns, 1 - y * ns);
   return noiseVal;
 }
 
@@ -71,8 +71,8 @@ function makeGrid() {
   cnv.noStroke();
   cnv.background(0);
   cnv.fill(255);
-  count = 0;
-  hexagonSize = params.hex_size;
+  let count = 0;
+  const hexagonSize = params.hex_size;
 
   let nv;
   let clrVal;
@@ -100,15 +100,15 @@ function makeGrid() {
 }
 
 function bakeSlider(min_val, max_val, param, house, step = 0.01) {
-  let h = createDiv();
+  const h = createDiv();
   h.style("display", "flex");
 
   print(params, param, params[param]);
-  let s = createSlider(min_val, max_val, params[param], step);
+  const s = createSlider(min_val, max_val, params[param], step);
   s.size(160);
 
-  let p = createP();
-  let label = createP(param);
+  const p = createP();
+  const label = createP(param);
   label.style("min-width", "5em");
 
   function updateVal() {
@@ -133,39 +133,39 @@ function bakeSlider(min_val, max_val, param, house, step = 0.01) {
 }
 
 function createSliders() {
-  housing = createDiv();
+  const housing = createDiv();
   housing.position(0, 0);
   housing.style("display", "flex");
   housing.style("flex-direction", "column");
   housing.style("background-color", "white");
   housing.style("padding", "1em");
 
-  h0 = bakeSlider(40, 300, "hex_size", housing, 1);
-  h1 = bakeSlider(-6, 6, "slope", housing);
-  h2 = bakeSlider(-6, 6, "gain", housing);
-  h3 = bakeSlider(0, 1, "limit", housing, 0.01);
-  h4 = bakeSlider(0.01, 4, "curv", housing);
-  h5 = bakeSlider(0, 50, "min_gap", housing, 1);
-  h6 = bakeSlider(1, 80, "noise_size", housing, 1);
-  h7 = bakeSlider(1, 80, "color_size", housing, 1);
+  bakeSlider(40, 300, "hex_size", housing, 1);
+  bakeSlider(-6, 6, "slope", housing);
+  bakeSlider(-6, 6, "gain", housing);
+  bakeSlider(0, 1, "limit", housing, 0.01);
+  bakeSlider(0.01, 4, "curv", housing);
+  bakeSlider(0, 50, "min_gap", housing, 1);
+  bakeSlider(1, 80, "noise_size", housing, 1);
+  bakeSlider(1, 80, "color_size", housing, 1);
 
-  cb = createCheckbox("Invert", params.invert);
+  const cb = createCheckbox("Invert", params.invert);
   cb.changed(invert_changed);
   housing.child(cb);
 
-  val2clr = createCheckbox("Value to Color", params.v2c);
+  const val2clr = createCheckbox("Value to Color", params.v2c);
   val2clr.changed(v2c_changed);
   housing.child(val2clr);
 
-  val2size = createCheckbox("Value to Size", params.v2s);
+  const val2size = createCheckbox("Value to Size", params.v2s);
   val2size.changed(v2s_changed);
   housing.child(val2size);
 
-  rndClr = createCheckbox("Random Color", params.rnd_clr);
+  const rndClr = createCheckbox("Random Color", params.rnd_clr);
   rndClr.changed(rnd_clr_changed);
   housing.child(rndClr);
 
-  resultSave = createButton("save");
+  const resultSave = createButton("save");
   resultSave.mousePressed(textureSave);
   housing.child(resultSave);
 }
@@ -195,8 +195,8 @@ function makePreview() {
   prv.stroke("blue");
   prv.strokeWeight(3);
   for (let i = 0; i < 1; i += 0.01) {
-    y = remap(i) / (params.hex_size * 0.5);
-    prv.point(i * 100, 100 - (remap(i) / (params.hex_size * 0.5)) * 100);
+    const y = remap(i) / (params.hex_size * 0.5);
+    prv.point(i * 100, 100 - y * 100);
   }
   prv.stroke("red");
   prv.line(params.limit * 100, 0, params.limit * 100, 100);

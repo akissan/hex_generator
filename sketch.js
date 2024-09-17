@@ -26,6 +26,7 @@ params = {
   v2c: false,
   v2s: true,
   rnd_clr: true,
+  limit_is_min: false,
 };
 
 function drawHexagon(cX, cY, r) {
@@ -43,7 +44,7 @@ function getHexSize(x, y) {
 }
 
 function remap(x) {
-  if (x < params.limit) {
+  if (!params.limit_is_min && x < params.limit) {
     return 0;
   }
 
@@ -56,7 +57,7 @@ function remap(x) {
 
   return constrain(
     y * (params.hex_size * 0.5 + 1),
-    0,
+    params.limit_is_min ? params.hex_size * 0.5 * params.limit : 0,
     params.hex_size * 0.5 - params.min_gap + 1
   );
 }
@@ -165,6 +166,10 @@ function createSliders() {
   rndClr.changed(rnd_clr_changed);
   housing.child(rndClr);
 
+  const limMin = createCheckbox("Limit == Min", params.limit_is_min);
+  limMin.changed(limit_is_min_changed);
+  housing.child(limMin);
+
   const resultSave = createButton("save");
   resultSave.mousePressed(textureSave);
   housing.child(resultSave);
@@ -184,6 +189,10 @@ function v2s_changed() {
 
 function rnd_clr_changed() {
   params.rnd_clr = this.checked();
+}
+
+function limit_is_min_changed() {
+  params.limit_is_min = this.checked();
 }
 
 function textureSave() {

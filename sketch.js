@@ -10,6 +10,7 @@ function setup() {
   createCanvas(winsize, winsize);
   cnv = createGraphics(4096, 4096);
   prv = createGraphics(100, 100);
+  setNewSeed();
   createSliders();
 }
 
@@ -20,10 +21,10 @@ params = {
   curv: 1,
   limit: 0.15,
   min_gap: 3,
-  noise_size: 10,
-  color_size: 10,
+  noise_size: 30,
+  color_size: 30,
   invert: false,
-  v2c: false,
+  v2c: true,
   v2s: true,
   rnd_clr: true,
   limit_is_min: false,
@@ -77,8 +78,8 @@ function makeGrid() {
 
   let nv;
   let clrVal;
-  for (y = 0; y < gridHeight; y += hexagonSize / 2.3) {
-    for (x = 0; x < gridWidth; x += hexagonSize * 1.5) {
+  for (y = 0; y < gridHeight + hexagonSize * 2; y += hexagonSize / 2.3) {
+    for (x = 0; x < gridWidth + hexagonSize * 2; x += hexagonSize * 1.5) {
       nv = getHexSize(x, y);
       clrVal = 255;
       if (params.v2c) {
@@ -100,17 +101,39 @@ function makeGrid() {
   }
 }
 
-function bakeSlider(min_val, max_val, param, house, step = 0.01) {
-  const h = createDiv();
-  h.style("display", "flex");
+function houseFunction(func, house) {
+  return function housedFunction(...args) {
+    return func(house, ...args);
+  };
+}
 
-  print(params, param, params[param]);
+function bakeCheckbox(house, name, param) {
+  function cb_changed() {
+    params[param] = this.checked();
+  }
+
+  const cb = createCheckbox(name, params[param]);
+  cb.addClass("checkbox");
+  cb.changed(cb_changed);
+  if (house) {
+    house.child(cb);
+  }
+
+  return cb;
+}
+
+function bakeSlider(house, min_val, max_val, param, step = 0.01) {
+  const h = createDiv();
+  h.addClass("sliderContainer");
+
   const s = createSlider(min_val, max_val, params[param], step);
-  s.size(160);
+  // s.size(160);
+  s.addClass("slider");
 
   const p = createP();
+  p.addClass("sliderValue");
   const label = createP(param);
-  label.style("min-width", "5em");
+  label.addClass("sliderLabel");
 
   function updateVal() {
     print(`${param} updated!: ${s.value()}`);
@@ -118,11 +141,30 @@ function bakeSlider(min_val, max_val, param, house, step = 0.01) {
     params[param] = s.value();
   }
 
+  function plus() {
+    s.value(s.value() + step);
+    updateVal();
+  }
+
+  function minus() {
+    s.value(s.value() - step);
+    updateVal();
+  }
+
   s.input(updateVal);
+
+  step_left = createButton("-");
+  step_left.mousePressed(minus);
+  step_right = createButton("+");
+  step_right.mousePressed(plus);
+  step_left.addClass("sliderButton");
+  step_right.addClass("sliderButton");
 
   h.child(label);
   h.child(s);
   h.child(p);
+  h.child(step_left);
+  h.child(step_right);
 
   if (house) {
     house.child(h);
@@ -135,68 +177,46 @@ function bakeSlider(min_val, max_val, param, house, step = 0.01) {
 
 function createSliders() {
   const housing = createDiv();
+  housing.addClass("house");
   housing.position(0, 0);
-  housing.style("display", "flex");
-  housing.style("flex-direction", "column");
-  housing.style("background-color", "white");
-  housing.style("padding", "1em");
 
-  bakeSlider(40, 300, "hex_size", housing, 1);
-  bakeSlider(-6, 6, "slope", housing);
-  bakeSlider(-6, 6, "gain", housing);
-  bakeSlider(0, 1, "limit", housing, 0.01);
-  bakeSlider(0.01, 4, "curv", housing);
-  bakeSlider(0, 50, "min_gap", housing, 1);
-  bakeSlider(1, 80, "noise_size", housing, 1);
-  bakeSlider(1, 80, "color_size", housing, 1);
+  bakeSlider = houseFunction(bakeSlider, housing);
+  bakeSlider(40, 300, "hex_size", 1);
+  bakeSlider(-6, 6, "slope");
+  bakeSlider(-6, 6, "gain");
+  bakeSlider(0, 1, "limit");
+  bakeSlider(0.01, 4, "curv");
+  bakeSlider(0, 50, "min_gap", 1);
+  bakeSlider(1, 100, "noise_size", 1);
+  bakeSlider(1, 100, "color_size", 1);
 
-  const cb = createCheckbox("Invert", params.invert);
-  cb.changed(invert_changed);
-  housing.child(cb);
+  bakeCheckbox = houseFunction(bakeCheckbox, housing);
+  bakeCheckbox("Invert", "invert");
+  bakeCheckbox("Hexagons smaller than limit are painted", "limit_is_min");
+  bakeCheckbox("Random size", "v2s");
+  bakeCheckbox("Random color", "rnd_clr");
+  bakeCheckbox("Color depends on size", "v2c");
 
-  const val2clr = createCheckbox("Value to Color", params.v2c);
-  val2clr.changed(v2c_changed);
-  housing.child(val2clr);
-
-  const val2size = createCheckbox("Value to Size", params.v2s);
-  val2size.changed(v2s_changed);
-  housing.child(val2size);
-
-  const rndClr = createCheckbox("Random Color", params.rnd_clr);
-  rndClr.changed(rnd_clr_changed);
-  housing.child(rndClr);
-
-  const limMin = createCheckbox("Limit == Min", params.limit_is_min);
-  limMin.changed(limit_is_min_changed);
-  housing.child(limMin);
+  const seedRnd = createButton("randomize noise");
+  seedRnd.addClass("ctrlButton");
+  seedRnd.mousePressed(setNewSeed);
+  housing.child(seedRnd);
 
   const resultSave = createButton("save");
+  resultSave.addClass("importantButton");
   resultSave.mousePressed(textureSave);
   housing.child(resultSave);
 }
 
-function invert_changed() {
-  params.invert = this.checked();
-}
-
-function v2c_changed() {
-  params.v2c = this.checked();
-}
-
-function v2s_changed() {
-  params.v2s = this.checked();
-}
-
-function rnd_clr_changed() {
-  params.rnd_clr = this.checked();
-}
-
-function limit_is_min_changed() {
-  params.limit_is_min = this.checked();
-}
-
 function textureSave() {
   saveCanvas(cnv);
+}
+
+function setNewSeed() {
+  const newNoiseSeed = random(1, 64 << 16);
+  cnv.noiseSeed(newNoiseSeed);
+  prv.noiseSeed(newNoiseSeed);
+  noiseSeed(newNoiseSeed);
 }
 
 function makePreview() {

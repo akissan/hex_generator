@@ -1,7 +1,102 @@
-html, body {
+html,
+body,
+p,
+button,
+input,
+div,
+span,
+label {
   margin: 0;
   padding: 0;
 }
 canvas {
   display: block;
+}
+
+.house {
+  font-size: 0.75rem;
+  padding: 1em;
+
+  display: flex;
+  flex-direction: column;
+  background-color: #1a1d1f;
+
+  color: #a9aaac;
+}
+
+.house,
+button {
+  font-family: "Consolas", "Courier", monospace;
+  border-radius: 4px;
+}
+
+.sliderContainer {
+  display: flex;
+  align-items: center;
+  /* gap: 0.25em; */
+}
+
+.sliderLabel,
+.sliderValue,
+.checkbox input,
+button {
+  margin-left: 0.25em;
+  margin-right: 0.25em;
+}
+
+.slider {
+  width: 16em;
+}
+
+.sliderButton {
+  padding: 0;
+  width: 2em;
+  height: 2em;
+
+  /* border: none; */
+
+  outline: none;
+  color: white;
+}
+
+button:hover {
+  background-color: #2b3035;
+}
+
+.sliderValue {
+  min-width: 4em;
+  color: white;
+}
+
+.sliderLabel {
+  min-width: 6em;
+}
+
+.checkbox {
+  user-select: none;
+  margin-bottom: 0.25em;
+}
+
+button {
+  margin: 0.25em;
+  border-radius: 4px;
+  padding: 1em;
+  color: white;
+  border: 1px solid #2b3035;
+  background-color: transparent;
+}
+
+.importantButton {
+  border-color: #0060df;
+  background-color: #0060df;
+}
+
+.importantButton:hover {
+  border-color: #177cff;
+  background-color: #177cff;
+}
+
+.importantButton:active {
+  border-color: #0051bb;
+  background-color: #0051bb;
 }
